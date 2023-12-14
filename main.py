@@ -12,7 +12,7 @@ from sqlalchemy.orm import relationship
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = "ogr09jbejmbzCVBbtrgegergebrvr"
+app.config['SECRET_KEY'] = os.environ.get("FLASK_KEY")
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DB_URI", "sqlite:///ejtodo.db")
 
 db = SQLAlchemy()
@@ -25,8 +25,8 @@ login_manager.init_app(app)
 app.app_context().push()
 
 
-class User(UserMixin, db.Model):
-    __tablename__ = "users"
+class Users(UserMixin, db.Model):
+    __tablename__ = "userss"
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(100), unique=True)
     password = db.Column(db.String(100))
@@ -42,8 +42,8 @@ class Board(db.Model):
     __tablename__ = "boards"
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), unique=True, nullable=False)
-    author_id = db.Column(db.Integer, db.ForeignKey("users.id"))
-    author = relationship("User", back_populates="work_board")
+    author_id = db.Column(db.Integer, db.ForeignKey("userss.id"))
+    author = relationship("Users", back_populates="work_board")
     todos = relationship("Todo", back_populates="parent_board_todo")
     doings = relationship("Doing", back_populates="parent_board_doing")
     dons = relationship("Done", back_populates="parent_board_done")
@@ -55,9 +55,9 @@ class Todo(db.Model):
     data = db.Column(db.String(250), nullable=False)
     date = db.Column(db.String(250), nullable=False)
 
-    author_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    author_id = db.Column(db.Integer, db.ForeignKey("userss.id"))
     board_id = db.Column(db.Integer, db.ForeignKey("boards.id"))
-    todo_author = relationship("User", back_populates="todos")
+    todo_author = relationship("Users", back_populates="todos")
     parent_board_todo = relationship("Board", back_populates="todos")
 
 
@@ -67,9 +67,9 @@ class Doing(db.Model):
     data = db.Column(db.String(250), nullable=False)
     date = db.Column(db.String(250), nullable=False)
 
-    author_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    author_id = db.Column(db.Integer, db.ForeignKey("userss.id"))
     board_id = db.Column(db.Integer, db.ForeignKey("boards.id"))
-    doing_author = relationship("User", back_populates="doings")
+    doing_author = relationship("Users", back_populates="doings")
     parent_board_doing = relationship("Board", back_populates="doings")
 
 
@@ -79,9 +79,9 @@ class Done(db.Model):
     data = db.Column(db.String(250), nullable=False)
     date = db.Column(db.String(250), nullable=False)
 
-    author_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    author_id = db.Column(db.Integer, db.ForeignKey("userss.id"))
     board_id = db.Column(db.Integer, db.ForeignKey("boards.id"))
-    done_author = relationship("User", back_populates="dons")
+    done_author = relationship("Users", back_populates="dons")
     parent_board_done = relationship("Board", back_populates="dons")
 
 
@@ -90,7 +90,7 @@ db.create_all()
 
 @login_manager.user_loader
 def load_user(user_id):
-    return db.get_or_404(User, user_id)
+    return db.get_or_404(Users, user_id)
 
 
 @app.route('/register', methods=["GET", "POST"])
@@ -99,7 +99,7 @@ def register():
         name = request.form["name"]
         email = request.form["email"]
         password = request.form["password"]
-        result = db.session.execute(db.select(User).where(User.email == email)).scalar()
+        result = db.session.execute(db.select(Users).where(Users.email == email)).scalar()
         if result is None:
             num_list = []
             for i in range(0, 6):
@@ -143,7 +143,7 @@ def register_verify():
         print(code_returned)
         if code_returned == code:
             hashed_password = generate_password_hash(password, method='pbkdf2:sha256', salt_length=8)
-            user = User(name=name, email=email, password=hashed_password)
+            user = Users(name=name, email=email, password=hashed_password)
             db.session.add(user)
             db.session.commit()
             return render_template("login.html", success="Registered Successfully please login!!")
@@ -159,7 +159,7 @@ def login():
     if request.method == "POST":
         email = request.form["email"]
         password = request.form["password"]
-        result = db.session.execute(db.select(User).where(User.email == email)).scalar()
+        result = db.session.execute(db.select(Users).where(Users.email == email)).scalar()
 
         if result is None:
             error = "Email id is incorrect or not registered"
@@ -189,7 +189,7 @@ def forgot_password():
         email = request.form["email"]
         print(email)
 
-        result = db.session.execute(db.select(User).where(User.email == email)).scalar()
+        result = db.session.execute(db.select(Users).where(Users.email == email)).scalar()
         print(result)
         if result is None:
             error = "Email is not registered, Please register first!!"
@@ -240,7 +240,7 @@ def update_passwords():
     email = request.args.get("email")
     print(email)
     hashed_password = generate_password_hash(password, method='pbkdf2:sha256', salt_length=8)
-    db.session.execute(Update(User).where(User.email == email).values(password=hashed_password))
+    db.session.execute(Update(Users).where(Users.email == email).values(password=hashed_password))
     db.session.commit()
     success = "Password changed Successfully"
     return render_template("login.html", success=success)
@@ -252,16 +252,16 @@ def welcome():
     logout = "Welcome to EJ Blog, PLease Register or Login"
     result = db.session.execute(db.select(Board))
     results = result.scalars()
-    user_result = db.session.execute(db.select(User)).scalars()
+    user_result = db.session.execute(db.select(Users)).scalars()
 
     if request.method == "POST":
         create_board = request.args.get("create_board")
         return render_template("index.html", user_id=current_user.id, user=True,
-                               login=db.get_or_404(User, current_user.id), create_board=create_board,
+                               login=db.get_or_404(Users, current_user.id), create_board=create_board,
                                board_lists_data=results)
     if current_user in user_result:
         return render_template("index.html", user_id=current_user.id, user=True,
-                               login=db.get_or_404(User, current_user.id), create_board=create_board,
+                               login=db.get_or_404(Users, current_user.id), create_board=create_board,
                                board_lists_data=results)
     else:
         return render_template("index.html", user=False, logout=logout)
@@ -278,7 +278,7 @@ def cancel_board():
 @app.route('/add_board', methods=["POST"])
 @login_required
 def add_board():
-    user = db.session.execute(db.select(User).where(User.id == current_user.id)).scalar()
+    user = db.session.execute(db.select(Users).where(Users.id == current_user.id)).scalar()
     if request.method == "POST":
         title = request.form.get("title")
         add_new_board = Board(title=title, author=user)
@@ -332,7 +332,7 @@ def show_task_board():
     done = db.session.execute(db.select(Done))
     results_done = done.scalars()
 
-    user_result = db.session.execute(db.select(User)).scalars()
+    user_result = db.session.execute(db.select(Users)).scalars()
 
     if request.method == "POST":
         task_submit_show1 = request.args.get("task_submit_show1")
@@ -344,12 +344,12 @@ def show_task_board():
         print(type(board_id))
 
         return render_template("show_task_board.html", user_id=current_user.id, user=True,
-                               login=db.get_or_404(User, current_user.id), create_board=create_board, todo=results_todo,
+                               login=db.get_or_404(Users, current_user.id), create_board=create_board, todo=results_todo,
                                doing=results_doing, done=results_done, board_id=board_id
                                , task_submit_show1=task_submit_show1, task_submit_show2=task_submit_show2,
                                task_submit_show3=task_submit_show3)
     return render_template("show_task_board.html", user_id=current_user.id, user=True,
-                           login=db.get_or_404(User, current_user.id), create_board=create_board, todo=results_todo,
+                           login=db.get_or_404(Users, current_user.id), create_board=create_board, todo=results_todo,
                            doing=results_doing, done=results_done, board_id=board_id
                            , task_submit_show1=task_submit_show1, task_submit_show2=task_submit_show2,
                            task_submit_show3=task_submit_show3)
@@ -373,7 +373,7 @@ def show_task_board_close():
 def add_task():
     board_id = request.args.get("board_id")
     print(board_id)
-    user = db.session.execute(db.select(User).where(User.id == current_user.id)).scalar()
+    user = db.session.execute(db.select(Users).where(Users.id == current_user.id)).scalar()
     board = db.session.execute(db.select(Board).where(Board.id == board_id)).scalar()
     print(user)
     if request.method == "POST":
@@ -430,7 +430,7 @@ def done():
     if request.method == "POST":
         board_id = request.args.get("board_id")
         tast_type = request.args.get("type")
-        user = db.session.execute(db.select(User).where(User.id == current_user.id)).scalar()
+        user = db.session.execute(db.select(Users).where(Users.id == current_user.id)).scalar()
         board = db.session.execute(db.select(Board).where(Board.id == board_id)).scalar()
         if tast_type == "todo":
             id = request.args.get("id")
