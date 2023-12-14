@@ -1,0 +1,41 @@
+{% block content %}
+{%include "header.html" %}
+
+<!-- Page Header -->
+<header
+  class="masthead"
+  style="background-image: url('../static/assets/img/register-bg.jpg')"
+>
+  <div class="container position-relative px-4 px-lg-5">
+    <div class="row gx-4 gx-lg-5 justify-content-center">
+      <div class="col-md-10 col-lg-8 col-xl-7">
+        <div class="page-heading">
+          <h1>Forgot Password</h1>
+          <span class="subheading">Please enter your email to send verification code</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+
+<main class="mb-4">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-md-10 mx-auto">
+        <!-- TODO:-Add CKEditor and render the form here -->
+    <form action="{{url_for('forgot_password')}}" method="POST">
+    <p style="color:red">{{error}}</p>
+      <div class="mb-3">
+        <input class="form-control" style="width:60%" type="email" name="email" placeholder="Email" value="{{email}}" required="required" />
+      </div>
+      <button type="submit" class="btn btn-primary btn-block btn-large">Submit</button>
+      <br>
+    </form>
+      </div>
+    </div>
+  </div>
+</main>
+
+{% include "footer.html" %}
+{% endblock %}

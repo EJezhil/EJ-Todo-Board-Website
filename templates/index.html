@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>EJ Blog - Start Bootstrap Theme</title>
+    <!-- Load Bootstrap-Flask CSS here -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="{{ url_for('static', filename='assets/favicon.ico') }}"
+    />
+    <!-- Font Awesome icons (free version)-->
+    <script
+      src="https://use.fontawesome.com/releases/v6.3.0/js/all.js"
+      crossorigin="anonymous"
+    ></script>
+    <!-- Google fonts-->
+    <link
+      href="https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <!-- Core theme CSS (includes Bootstrap)-->
+    <link
+      href="{{ url_for('static', filename='css/styles.css') }}"
+      rel="stylesheet"
+    />
+    <style>
+
+      @media (min-width:800px){
+          #board{
+            width: 40%;
+
+          }
+      }
+
+  </style>
+  </head>
+
+<!-- Page Header-->
+<header
+  class="masthead"
+  style="background-image: url('../static/assets/img/home-bg.jpg')"
+>
+  <div class="container position-relative px-4 px-lg-5">
+    <div class="row gx-4 gx-lg-5 justify-content-center">
+      <div class="col-md-10 col-lg-8 col-xl-7">
+        <div class="site-heading">
+          <h1>EJ Todo Board</h1>
+          <span class="subheading">A Todo Board Theme by Start Bootstrap</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<nav class="navbar navbar-expand-lg navbar-light" id="mainNav">
+  <div class="container px-4 px-lg-5">
+    <a class="navbar-brand" href="/">EJ Todo Board</a>
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarResponsive"
+      aria-controls="navbarResponsive"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      Menu
+      <i class="fas fa-bars"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarResponsive">
+      <ul class="navbar-nav ms-auto py-4 py-lg-0">
+        <li class="nav-item">
+          <a
+            class="nav-link px-lg-3 py-3 py-lg-4"
+            href="/"
+            >Home</a
+          >
+        </li>
+      
+        {% if not login: %}
+        <li class="nav-item">
+          <a
+            class="nav-link px-lg-3 py-3 py-lg-4"
+            href="{{ url_for('login') }}"
+            >Login</a
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link px-lg-3 py-3 py-lg-4"
+            href="{{ url_for('register') }}"
+            >Register</a
+          >
+        </li>
+        {% endif %}
+        {% if login: %}
+        <li class="nav-item">
+          <a
+            class="nav-link px-lg-3 py-3 py-lg-4"
+            href="{{ url_for('logout') }}"
+            >Log Out</a
+          >
+        </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Main Content-->
+<div class="container" id="board" style="display: flex; justify-content: center;">
+    <div>
+      <h2 style="color:red;text-align:center">{{logout}}</h2>
+    </div>
+
+    {% if user %}     
+      <div style="width: 65%;">
+        <div class="card h-100">
+          <div class="card-body" style="background-color: gold;">
+            <h5 class="card-title">Board</h5>
+    
+           <div class="list-group">
+              {% for i in board_lists_data%}
+              {% if i.author.id|int() == user_id %}
+                <label class="list-group-item d-flex gap-3">                 
+                  <span class="pt-1 form-checked-content">
+                    <form action="{{url_for('show_task_board',board_id=i.id)}}" method="post">
+                      <button type="submit" style="background-color: white; border: 0px solid white;">{{i.title}}</button>
+                    </form>
+                    
+                  </span>
+                  <form action="{{url_for('delete_board',board_id=i.id)}}" method="post">
+                      <button type="submit" style="position: absolute; left: 85%; border: 1px solid red; border-radius: 10px;">❌</button>
+                  </form>
+                </label>
+                {% endif %}
+              {% endfor %}
+            </div>     
+    
+          </div>
+          {% if create_board %}
+          <div class="card-footer">
+            <form action="{{url_for('add_board')}}" method="post">
+                  <div class="form-floating mb-3">
+                      <input type="text" name="title" class="form-control" placeholder="Enter Board Name" required>
+                      <label for="floatingInput">Enter Board Name</label>
+                  </div>
+                  <button type="submit" class="btn btn-primary"  style="background-color: #4CB9E7; color:white;" name="submit">➕ Add New Boar </button>
+              </form>
+              <form action="{{url_for('cancel_board',create_board=False)}}" method="post">
+                <button type="submit" class="btn my-2" style="border: 1px solid red;">❌</button>
+            </form>
+           </div>
+           {% else %}
+          <div class="card-footer">
+            <form action="{{url_for('welcome',create_board=True)}}" method="post">              
+              <button type="submit" class="btn"  style="background-color: #4CB9E7; color:white;" name="submit">➕ Add Board</button>
+              </form>
+          </div>
+          {% endif %}
+    
+        </div>
+      </div>
+      {% endif %}
+    
+</div>
+
+
+    
+    
+
+{% include "footer.html" %}
