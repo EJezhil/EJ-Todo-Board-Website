@@ -41,7 +41,7 @@ class Users(UserMixin, db.Model):
 class Board(db.Model):
     __tablename__ = "boards"
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), unique=True, nullable=False)
+    title = db.Column(db.String(100), nullable=False)
     author_id = db.Column(db.Integer, db.ForeignKey("userss.id"))
     author = relationship("Users", back_populates="work_board")
     todos = relationship("Todo", back_populates="parent_board_todo")
