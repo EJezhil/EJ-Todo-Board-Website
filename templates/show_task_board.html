@@ -142,7 +142,7 @@
 
            <div class="list-group">
               {% for i in todo%}
-              {% if i.parent_board_todo.id|int() == board_id|int() %}
+              {% if i.board_id|int() == board_id|int() %}
                 <label class="list-group-item d-flex gap-3">                 
                   <form id="{{i.id}}" action="{{url_for('done',id=i.id,type='todo',board_id=board_id)}}" method="post">
                       <input class="form-check-input p-3" style="background-color: lightgreen;" onchange="document.getElementById('{{i.id}}').submit()" name="checkbox_value" type="checkbox" value="" id="flexCheckDefault">
@@ -199,7 +199,7 @@
 
              <div class="list-group">
                 {% for i in doing%}
-                {% if i.parent_board_doing.id|int() == board_id|int() %}
+                 {% if i.board_id|int() == board_id|int() %}
                   <label class="list-group-item d-flex gap-3">
                       <form id="{{i.id}}" action="{{url_for('done',id=i.id,type='doing',board_id=board_id)}}" method="post">
                           <input class="form-check-input p-3" style="background-color: lightgreen;" onchange="document.getElementById('{{i.id}}').submit()" name="checkbox_value" type="checkbox" value="" id="flexCheckDefault">
@@ -255,7 +255,7 @@
 
              <div class="list-group">
                 {% for i in done%}
-                {% if i.parent_board_done.id|int() == board_id|int() %}
+               {% if i.board_id|int() == board_id|int() %}
                   <label class="list-group-item d-flex gap-3">
                       <input class="form-check-input " style="background-color: lightgreen;" onchange="document.getElementById('{{i.id}}').submit()" hidden>
                       <span class="pt-1 form-checked-content">
