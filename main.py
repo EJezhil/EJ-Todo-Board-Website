@@ -269,7 +269,7 @@ def welcome():
 def cancel_board():
     if request.method == "POST":
         create_board = request.args.get("create_board")
-        return redirect(url_for("welcome",create_board=create_board))
+        return redirect(url_for("welcome", create_board=create_board))
 
 
 @app.route('/add_board', methods=["POST"])
@@ -290,8 +290,16 @@ def delete_board():
     if request.method == "POST":
         board_id = request.args.get("board_id")
         board_to_delete = db.session.execute(db.select(Board).where(Board.id == board_id)).scalar()
+        todo_to_delete = db.session.execute(db.select(Todo).where(Todo.id == board_id)).scalar()
+        doing_to_delete = db.session.execute(db.select(Doing).where(Doing.id == board_id)).scalar()
+        done_to_delete = db.session.execute(db.select(Done).where(Done.id == board_id)).scalar()
+
+        db.session.delete(todo_to_delete)
+        db.session.delete(doing_to_delete)
+        db.session.delete(done_to_delete)
         db.session.delete(board_to_delete)
         db.session.commit()
+
         return redirect(url_for('welcome'))
 
 
@@ -343,7 +351,8 @@ def show_task_board():
         results_done = done.scalars()
 
         return render_template("show_task_board.html", user_id=current_user.id, user=True,
-                               login=db.get_or_404(Users, current_user.id), create_board=create_board, todo=results_todo,
+                               login=db.get_or_404(Users, current_user.id), create_board=create_board,
+                               todo=results_todo,
                                doing=results_doing, done=results_done, board_id=board_id
                                , task_submit_show1=task_submit_show1, task_submit_show2=task_submit_show2,
                                task_submit_show3=task_submit_show3)
