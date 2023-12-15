@@ -108,7 +108,7 @@ def register():
             str_list = [str(i) for i in num_list]
             rand = ""
             code = rand.join(str_list)
-            print(code)
+            # print(code)
             send_verification(name, code, email)
             return redirect(url_for("register_verify", name=name, email=email, password=password, code=code))
         else:
@@ -122,13 +122,13 @@ def send_verification(name, codes, email):
     username = os.environ.get('email')
     passwords = os.environ.get('password')
     email_message = f"Subject:Verify your Email\n\nHi {name},\nPlease enter this code in EJ Todo Board \nCode:{codes}"
-    print(email_message)
+    # print(email_message)
     with smtplib.SMTP("smtp.gmail.com", port=587) as connection:
         connection.starttls()
         connection.login(user=username, password=passwords)
         connection.sendmail(from_addr=username, to_addrs=email,
                             msg=email_message.encode('utf-8'))
-        print("Mail sent")
+        # print("Mail sent")
 
 
 @app.route('/register_verify', methods=["GET", "POST"])
@@ -140,7 +140,7 @@ def register_verify():
 
     if request.method == "POST":
         code_returned = request.form["code"]
-        print(code_returned)
+        # print(code_returned)
         if code_returned == code:
             hashed_password = generate_password_hash(password, method='pbkdf2:sha256', salt_length=8)
             user = Users(name=name, email=email, password=hashed_password)
@@ -187,10 +187,10 @@ def logout():
 def forgot_password():
     if request.method == "POST":
         email = request.form["email"]
-        print(email)
+        # print(email)
 
         result = db.session.execute(db.select(Users).where(Users.email == email)).scalar()
-        print(result)
+        # print(result)
         if result is None:
             error = "Email is not registered, Please register first!!"
             return render_template("forgot.html", error=error)
@@ -202,7 +202,7 @@ def forgot_password():
             str_lists = [str(ii) for ii in num_lists]
             rands = ""
             codess = rands.join(str_lists)
-            print(codess)
+            # print(codess)
             send_verification(name="", email=email, codes=codess)
             return redirect(url_for("verify", email_code=codess, email=email))
 
@@ -212,15 +212,15 @@ def forgot_password():
 @app.route('/verify', methods=["GET", "POST"])
 def verify():
     email_code = request.args.get("email_code")
-    print(email_code)
+    # print(email_code)
     email = request.args.get("email")
-    print(email)
+    # print(email)
     error = ""
     success = ""
     update = False
     if request.method == "POST":
         code_forgot_password = request.form["code"]
-        print(code_forgot_password)
+        # print(code_forgot_password)
         if code_forgot_password == email_code:
             update = True
             success = "Verification successfully,\n Enter your new password now!!"
@@ -236,9 +236,9 @@ def verify():
 @app.route('/update_passwords', methods=["GET", "POST"])
 def update_passwords():
     password = request.form["password"]
-    print(password)
+    # print(password)
     email = request.args.get("email")
-    print(email)
+    # print(email)
     hashed_password = generate_password_hash(password, method='pbkdf2:sha256', salt_length=8)
     db.session.execute(Update(Users).where(Users.email == email).values(password=hashed_password))
     db.session.commit()
@@ -304,7 +304,6 @@ def show_task_board():
     task_submit_show1 = request.args.get("task_submit_show1")
     task_submit_show2 = request.args.get("task_submit_show2")
     task_submit_show3 = request.args.get("task_submit_show3")
-    board_id = request.args.get("board_id")
 
     if task_submit_show1 is None:
         task_submit_show1 = False
@@ -312,17 +311,12 @@ def show_task_board():
         task_submit_show2 = False
     if task_submit_show3 is None:
         task_submit_show3 = False
-    # task_submit_show1 = False
-    # task_submit_show2 = False
-    # task_submit_show3 = False
-    # if board_id is None:
-    create_board = request.args.get("create_board")
 
     board_id = request.args.get("board_id")
-    print(board_id)
-    print(type(board_id))
+    # print(board_id)
+    # print(type(board_id))
     create_board = False
-    logout = "Welcome to EJ Blog, PLease Register or Login"
+
     todo = db.session.execute(db.select(Todo))
     results_todo = todo.scalars()
 
@@ -332,16 +326,24 @@ def show_task_board():
     done = db.session.execute(db.select(Done))
     results_done = done.scalars()
 
-    user_result = db.session.execute(db.select(Users)).scalars()
+    # user_result = db.session.execute(db.select(Users)).scalars()
 
     if request.method == "POST":
         task_submit_show1 = request.args.get("task_submit_show1")
         task_submit_show2 = request.args.get("task_submit_show2")
         task_submit_show3 = request.args.get("task_submit_show3")
         board_id = request.args.get("board_id")
-        print(board_id)
-        print(board_id)
-        print(type(board_id))
+        # print(board_id)
+        # print(board_id)
+        # print(type(board_id))
+        todo = db.session.execute(db.select(Todo))
+        results_todo = todo.scalars()
+
+        doing = db.session.execute(db.select(Doing))
+        results_doing = doing.scalars()
+
+        done = db.session.execute(db.select(Done))
+        results_done = done.scalars()
 
         return render_template("show_task_board.html", user_id=current_user.id, user=True,
                                login=db.get_or_404(Users, current_user.id), create_board=create_board, todo=results_todo,
@@ -372,13 +374,13 @@ def show_task_board_close():
 @login_required
 def add_task():
     board_id = request.args.get("board_id")
-    print(board_id)
+    # print(board_id)
     user = db.session.execute(db.select(Users).where(Users.id == current_user.id)).scalar()
     board = db.session.execute(db.select(Board).where(Board.id == board_id)).scalar()
-    print(user)
+    # print(user)
     if request.method == "POST":
         tast_type = request.args.get("type")
-        print(tast_type)
+        # print(tast_type)
         if tast_type == "todo":
             data = request.form.get("data")
             date = request.form.get("date")
@@ -434,7 +436,7 @@ def done():
         board = db.session.execute(db.select(Board).where(Board.id == board_id)).scalar()
         if tast_type == "todo":
             id = request.args.get("id")
-            print(id)
+            # print(id)
             todo_doing = db.session.execute(db.select(Todo).where(Todo.id == id)).scalar()
             data = todo_doing.data
             date = todo_doing.date
