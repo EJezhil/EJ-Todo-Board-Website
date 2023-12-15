@@ -11,7 +11,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get("FLASK_KEY")
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DB_URI", "sqlite:///ejtodo2.db")
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DB_URI", "sqlite:///ejtodo3.db")
 
 db = SQLAlchemy()
 db.init_app(app)
@@ -294,9 +294,13 @@ def delete_board():
         doing_to_delete = db.session.execute(db.select(Doing).where(Doing.id == board_id)).scalar()
         done_to_delete = db.session.execute(db.select(Done).where(Done.id == board_id)).scalar()
 
-        db.session.delete(todo_to_delete)
-        db.session.delete(doing_to_delete)
-        db.session.delete(done_to_delete)
+        if todo_to_delete is not None:
+            db.session.delete(todo_to_delete)
+        if doing_to_delete is not None:
+            db.session.delete(doing_to_delete)
+        if done_to_delete is not None:
+            db.session.delete(done_to_delete)
+
         db.session.delete(board_to_delete)
         db.session.commit()
 
