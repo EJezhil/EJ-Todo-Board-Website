@@ -3,10 +3,8 @@ import smtplib
 from random import randint
 
 from flask import Flask, render_template, redirect, url_for, request
-from flask_bootstrap import Bootstrap5
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
 from flask_sqlalchemy import SQLAlchemy
-from jinja2 import StrictUndefined
 from sqlalchemy import Update
 from sqlalchemy.orm import relationship
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -21,7 +19,6 @@ db.init_app(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-# app.jinja_env.undefined = StrictUndefined
 app.app_context().push()
 
 
